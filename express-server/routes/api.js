@@ -1,5 +1,6 @@
 // Import dependencies
 const mongoose = require('mongoose');
+const autoIncrement = require('mongoose-sequence')(mongoose);
 const express = require('express');
 const router = express.Router();
 
@@ -14,9 +15,11 @@ const userSchema = new mongoose.Schema({
   name: String,
   age: Number
 });
+mongoose.model('User', userSchema);
 
 // create mongoose model
 const User = mongoose.model('User', userSchema);
+userSchema.plugin(autoIncrement, {inc_field: 'id'});
 
 /* GET api listing. */
 router.get('/', (req, res) => {
@@ -35,6 +38,14 @@ router.get('/users', (req, res) => {
 /* GET one users. */
 router.get('/users/:id', (req, res) => {
     User.findById(req.param.id, (err, users) => {
+        if (err) res.status(500).send(error)
+
+        res.status(200).json(users);
+    });
+});
+
+router.delete('/users/:id', (req, res) => {
+    User.remove({_id: req.params.id}, (err, users) => {
         if (err) res.status(500).send(error)
 
         res.status(200).json(users);
